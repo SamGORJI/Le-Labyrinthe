@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadowlands | آینه تمام‌نما</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lalezar&family=Vazirmatn:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #050505;
+            --bg-panel: #16161e;
+            --accent-color: #9b5de5;
+            --text-main: #edf2f4;
+            --font-main: 'Vazirmatn', sans-serif;
+            --font-title: 'Lalezar', cursive;
+            transition: all 0.5s ease;
+        }
+
+        /* Language Specific Fonts */
+        html[lang="en"], html[lang="fr"] {
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-title: 'Cinzel', serif;
+            letter-spacing: 1px;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+            cursor: none;
+            perspective: 1000px;
+        }
+
+        /* Custom Cursor */
+        #custom-cursor {
+            position: fixed; top: 0; left: 0; width: 20px; height: 20px;
+            border: 2px solid var(--accent-color); border-radius: 50%;
+            pointer-events: none; z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+            mix-blend-mode: difference;
+        }
+        #custom-cursor.hovered { width: 50px; height: 50px; background-color: rgba(155, 93, 229, 0.2); border-color: #fff; }
+
+        h1, h2, h3, h4, h5, .rpg-title { font-family: var(--font-title); }
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 1s ease-in; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- LANDING FX --- */
+        #landing-page {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            text-align: center; position: relative; overflow: hidden; background: #000;
+            z-index: 1; transform-style: preserve-3d;
+        }
+
+        /* Moving Fog Background */
+        #fog-layer {
+            position: absolute; top: 0; left: 0; width: 200%; height: 200%;
+            background: url('https://raw.githubusercontent.com/danielstuart14/CSS_FOG_ANIMATION/master/img/fog1.png') repeat;
+            opacity: 0.2; animation: fogMove 60s linear infinite; z-index: 0; pointer-events: none;
+        }
+        @keyframes fogMove { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-50%, -50%, 0); } }
+
+        #aura-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;
+            background: radial-gradient(circle 400px at var(--x, 50%) var(--y, 50%), rgba(155, 93, 229, 0.1) 0%, rgba(0,0,0,0) 60%);
+        }
+
+        #particles-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.8; pointer-events: none;
+        }
+
+        .landing-content { z-index: 2; position: relative; transition: transform 0.1s ease-out; transform-style: preserve-3d; }
+
+        /* THE EYE PORTAL */
+        .gateway-portal {
+            width: 200px; height: 200px; border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            margin: 0 auto 40px; display: flex; align-items: center; justify-content: center;
+            background: #000; box-shadow: 0 0 60px var(--accent-color);
+            position: relative; cursor: pointer; transition: all 0.5s; overflow: hidden;
+            animation: initialExpand 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes initialExpand { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .gateway-portal:hover { transform: scale(1.05); box-shadow: 0 0 100px var(--accent-color); }
+
+        .portal-eye-container {
+            width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+        }
+        
+        .portal-eye {
+            font-size: 6rem; color: var(--accent-color);
+            text-shadow: 0 0 20px var(--accent-color);
+            transition: transform 0.1s ease-out;
+        }
+
+        /* Language Switcher - FIXED POSITION */
+        .lang-switcher {
+            position: fixed; 
+            top: 25px; 
+            right: 25px; /* Always fixed to right, doesn't flip with dir */
+            z-index: 1000; 
+            display: flex; 
+            gap: 8px;
+            background: rgba(0,0,0,0.6); 
+            padding: 8px; 
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.15); 
+            backdrop-filter: blur(10px);
+        }
+
+        .lang-btn {
+            background: transparent; border: none; color: rgba(255,255,255,0.5);
+            padding: 5px 12px; border-radius: 20px; cursor: pointer; transition: all 0.3s;
+            font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: bold;
+        }
+        .lang-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .lang-btn.active { background: var(--accent-color); color: #fff; box-shadow: 0 0 15px var(--accent-color); transform: scale(1.05); }
+
+        /* Mode Cards */
+        #mode-selection-panel { opacity: 0; pointer-events: none; transition: opacity 1s; }
+        #mode-selection-panel.active { opacity: 1; pointer-events: all; }
+
+        .mode-card {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px); border-radius: 12px; padding: 30px 20px;
+            cursor: pointer; transition: all 0.3s; height: 100%;
+        }
+        .mode-card:hover { transform: translateY(-10px); border-color: var(--accent-color); background: rgba(255,255,255,0.07); }
+
+        /* Gameplay UI */
+        .scenario-container {
+            background: rgba(22, 22, 30, 0.9); border: 1px solid #333; border-radius: 15px; padding: 30px;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5); border-top: 4px solid var(--accent-color);
+            transition: border-color 1s;
+        }
+        
+        .choice-btn {
+            background: rgba(255,255,255,0.03); border: 1px solid #444; color: #ddd;
+            text-align: inherit; padding: 15px 20px; margin-bottom: 10px; width: 100%;
+            border-radius: 8px; transition: all 0.2s; position: relative; overflow: hidden;
+            display: flex; align-items: center; justify-content: space-between; cursor: none;
+            min-height: 60px;
+        }
+        .choice-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--accent-color); color: #fff; transform: translateX(5px); }
+        html[dir="rtl"] .choice-btn:hover { transform: translateX(-5px); }
+        
+        .choice-btn::before {
+            content: ''; position: absolute; top: 0; bottom: 0; width: 4px;
+            background: var(--accent-color); opacity: 0; transition: opacity 0.2s;
+        }
+        html[dir="rtl"] .choice-btn::before { left: 0; } html[dir="ltr"] .choice-btn::before { right: 0; }
+        .choice-btn:hover::before { opacity: 1; }
+
+        .choice-btn span { pointer-events: none; }
+
+        /* Results */
+        .radar-chart-container { width: 260px; height: 260px; margin: 0 auto; position: relative; }
+        .char-sheet {
+            background: #e3d5ca; color: #2b2d42; padding: 40px; border-radius: 5px;
+            box-shadow: 0 0 80px rgba(0,0,0,0.9); border: 10px solid #2b2d42;
+        }
+        button { cursor: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- Custom Cursor -->
+    <div id="custom-cursor"></div>
+
+    <!-- Language Switcher (Fixed Position) -->
+    <div class="lang-switcher">
+        <button id="btn-fa" class="lang-btn active" onclick="app.setLanguage('fa')">FA</button>
+        <button id="btn-en" class="lang-btn" onclick="app.setLanguage('en')">EN</button>
+        <button id="btn-fr" class="lang-btn" onclick="app.setLanguage('fr')">FR</button>
+    </div>
+
+    <!-- 1. LANDING PAGE -->
+    <section id="page-landing">
+        <div id="fog-layer"></div>
+        <div id="aura-overlay"></div>
+        <canvas id="particles-canvas"></canvas>
+
+        <div class="container landing-content" id="landing-content">
+            <!-- Intro State -->
+            <div id="intro-state">
+                <div class="gateway-portal" onclick="app.enterPortal()">
+                    <div class="portal-eye-container">
+                        <i class="fas fa-eye portal-eye" id="tracking-eye"></i>
+                    </div>
+                </div>
+                <h1 class="display-3 mb-2" id="landing-title">آینه تمام‌نما</h1>
+                <p class="text-secondary fs-5 mb-5 opacity-75" id="landing-subtitle">برای روبرو شدن با حقیقت، آینه را لمس کنید</p>
+            </div>
+
+            <!-- Mode Selection State -->
+            <div id="mode-selection-panel" class="hidden" style="max-width: 1100px; margin: 0 auto;">
+                <h2 class="text-white mb-5 rpg-title display-5" id="mode-title">مسیر خود را انتخاب کنید</h2>
+                <!-- Adjusted grid for 4 items -->
+                <div class="row g-4 justify-content-center">
+                    
+                    <!-- 1. Wayfarer (New) -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="mode-card" onclick="game.start(3)">
+                            <i class="fas fa-wind fa-3x mb-3 text-light"></i>
+                            <h4 class="text-white" id="mode-0-title">رهگذر</h4>
+                            <p class="small text-secondary" id="mode-0-desc">۳ مرحله (آشنایی)</p>
+                        </div>
+                    </div>
+
+                    <!-- 2. Scout -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="mode-card" onclick="game.start(6)">
+                            <i class="fas fa-bolt fa-3x mb-3 text-info"></i>
+                            <h4 class="text-white" id="mode-1-title">پیشاهنگ</h4>
+                            <p class="small text-secondary" id="mode-1-desc">۶ مرحله (سریع)</p>
+                        </div>
+                    </div>
+
+                    <!-- 3. Explorer -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="mode-card" onclick="game.start(12)">
+                            <i class="fas fa-compass fa-3x mb-3 text-warning"></i>
+                            <h4 class="text-white" id="mode-2-title">کاوشگر</h4>
+                            <p class="small text-secondary" id="mode-2-desc">۱۲ مرحله (متعادل)</p>
+                        </div>
+                    </div>
+
+                    <!-- 4. Hero -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="mode-card" onclick="game.start(18)">
+                            <i class="fas fa-dragon fa-3x mb-3 text-danger"></i>
+                            <h4 class="text-danger" id="mode-3-title">قهرمان</h4>
+                            <p class="small text-secondary" id="mode-3-desc">۱۸ مرحله (کامل)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. GAMEPLAY -->
+    <section id="page-game" class="container py-5 hidden" style="max-width: 800px;">
+        <div class="d-flex justify-content-between align-items-center mb-3 text-secondary">
+            <span id="domain-badge" class="badge bg-dark border border-secondary p-2">Domain: ---</span>
+            <span id="level-tracker">Level 1</span>
+        </div>
+
+        <div class="scenario-container fade-in">
+            <div class="row align-items-center mb-4">
+                <div class="col-md-3 text-center">
+                    <i id="monster-icon" class="fas fa-ghost monster-avatar"></i>
+                </div>
+                <div class="col-md-9">
+                    <h3 id="monster-title" class="text-white mb-1">---</h3>
+                    <small class="text-muted d-block mb-2" id="monster-desc">---</small>
+                </div>
+            </div>
+            <p class="lead text-light mb-4" id="scenario-text" style="line-height: 2; padding: 0 15px; border-inline-start: 3px solid var(--accent-color);">---</p>
+            <div id="choices-box"></div>
+        </div>
+    </section>
+
+    <!-- 3. RESULTS -->
+    <section id="page-result" class="container py-5 hidden">
+        <div class="char-sheet fade-in mx-auto" style="max-width: 900px;">
+            <div class="row">
+                <div class="col-md-6 border-end-md border-dark">
+                    <h2 class="rpg-title mb-1" id="res-title">نقشه روح</h2>
+                    <p class="text-muted small mb-4" id="res-subtitle">تحلیل گرافیکی</p>
+                    <div class="radar-chart-container d-flex align-items-center justify-content-center">
+                        <svg width="260" height="260" viewBox="0 0 100 100" id="radar-svg"></svg>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 ps-md-4 mt-4 mt-md-0">
+                    <h3 class="rpg-title text-danger" id="archetype-title">---</h3>
+                    <h5 class="mb-3 border-bottom border-dark pb-2" id="res-top-shadows">سایه‌های غالب</h5>
+                    <div id="top-schemas-list"></div>
+
+                    <div class="mt-4 p-3 bg-white bg-opacity-50 rounded">
+                        <strong id="res-advice-label">توصیه نهایی:</strong>
+                        <p id="final-advice" class="mb-0 mt-1 small" style="text-align: justify;"></p>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-dark w-100 mt-4 py-3 fw-bold" id="btn-restart" onclick="location.reload()">بازگشت</button>
+        </div>
+    </section>
+
+    <script>
+        const i18n = {
+            fa: { dir: 'rtl', title: 'آینه تمام‌نما', subtitle: 'برای روبرو شدن با حقیقت، آینه را لمس کنید', modeTitle: 'مسیر خود را انتخاب کنید', modes: ['رهگذر', 'پیشاهنگ', 'کاوشگر', 'قهرمان'], modeDescs: ['۳ مرحله (آشنایی)', '۶ مرحله (سریع)', '۱۲ مرحله (متعادل)', '۱۸ مرحله (کامل)'], level: 'مرحله', of: 'از', domain: 'حوزه', resTitle: 'نقشه روح', resSub: 'تحلیل گرافیکی', topShadows: 'سایه‌های غالب', advice: 'توصیه هوشمند', restart: 'بازگشت به ابتدا', severity: { high: 'شدید', med: 'متوسط' }, domains: {d1: 'بریدگی', d2: 'خودگردانی', d3: 'محدودیت', d4: 'دیگرجهت‌مندی', d5: 'گوش‌به‌زنگی'} },
+            en: { dir: 'ltr', title: 'Mirror of Souls', subtitle: 'Touch the mirror to face the truth', modeTitle: 'Choose Your Path', modes: ['Wayfarer', 'Scout', 'Explorer', 'Hero'], modeDescs: ['3 Levels (Intro)', '6 Levels (Fast)', '12 Levels (Balanced)', '18 Levels (Full)'], level: 'Level', of: 'of', domain: 'Domain', resTitle: 'Soul Map', resSub: 'Graphical Analysis', topShadows: 'Dominant Shadows', advice: 'Smart Advice', restart: 'Return to Start', severity: { high: 'High', med: 'Medium' }, domains: {d1: 'Disconnection', d2: 'Autonomy', d3: 'Limits', d4: 'Other-Directed', d5: 'Overvigilance'} },
+            fr: { dir: 'ltr', title: 'Miroir des Âmes', subtitle: 'Touchez le miroir pour la vérité', modeTitle: 'Votre Voie', modes: ['Voyageur', 'Éclaireur', 'Explorateur', 'Héros'], modeDescs: ['3 Niveaux (Intro)', '6 Niveaux', '12 Niveaux', '18 Niveaux'], level: 'Niveau', of: 'sur', domain: 'Domaine', resTitle: 'Carte de l\'Âme', resSub: 'Analyse Graphique', topShadows: 'Ombres Dominantes', advice: 'Conseil Intelligent', restart: 'Retour', severity: { high: 'Élevé', med: 'Moyen' }, domains: {d1: 'Séparation', d2: 'Autonomie', d3: 'Limites', d4: 'Orientation', d5: 'Hypervigilance'} }
+        };
+
+        let curLang = 'fa';
+
+        const schemaData = [
+            // --- DOMAIN 1: DISCONNECTION & REJECTION ---
+            { id: 'ed', domainId: 'd1', color: '#4cc9f0', icon: 'fa-icicles', texts: {
+                fa: { name: 'محرومیت هیجانی', desc: 'نیازهای عاطفی شما دیده نمی‌شود.', scenario: 'یک روز سخت کاری داشته‌اید و نیاز به حمایت دارید، اما همسرتان سرش در گوشی است.', advice: 'این طرحواره به شما می‌گوید "هیچکس مرا دوست ندارد". واقعیت این است که باید نیازتان را شفاف بگویید. تمرین کنید بگویید: "من روز سختی داشتم، می‌شه ۵ دقیقه بغلم کنی؟"', options: [
+                    {t:'سکوت می‌کنم و منتظر می‌مانم خودش بفهمد (که نمی‌فهمد)',s:3}, 
+                    {t:'قهر می‌کنم و به اتاق می‌روم تا او احساس گناه کند',s:2}, 
+                    {t:'وانمود می‌کنم حالم عالی است و نیازی به او ندارم',s:2}, 
+                    {t:'می‌گویم: "عزیزم، من نیاز به توجه دارم، میشه صحبت کنیم؟"',s:0}
+                ]},
+                en: { name: 'Emotional Deprivation', desc: 'Unmet emotional needs.', scenario: 'You had a tough day and need support, but your partner is distracted.', advice: 'Practice expressing needs clearly instead of hoping others will guess.', options: [
+                    {t:'Stay silent and hope they notice',s:3}, 
+                    {t:'Sulk or get angry to make them feel guilty',s:2}, 
+                    {t:'Act like I don\'t need anyone',s:2}, 
+                    {t:'Say: "I need some comfort right now."',s:0}
+                ]},
+                fr: { name: 'Carence Affective', desc: 'Besoins non comblés.', scenario: 'Journée difficile, besoin de soutien, mais partenaire distrait.', advice: 'Exprimez vos besoins clairement.', options: [
+                    {t:'Silence en espérant qu\'il remarque',s:3}, 
+                    {t:'Bouder pour culpabiliser',s:2}, 
+                    {t:'Faire semblant d\'aller bien',s:2}, 
+                    {t:'Dire: "J\'ai besoin de réconfort."',s:0}
+                ]}
+            }},
+            { id: 'ab', domainId: 'd1', color: '#4cc9f0', icon: 'fa-user-slash', texts: {
+                fa: { name: 'رهاشدگی', desc: 'ترس دائمی از ترک شدن.', scenario: 'شریک عاطفی‌تان قرار شام را کنسل کرده چون کار فوری برایش پیش آمده.', advice: 'کودک درون شما فکر می‌کند "او رفت و دیگر برنمی‌گردد". به خودتان یادآوری کنید: "او مرا دوست دارد، فقط کار دارد."', options: [
+                    {t:'مطمئنم این بهانه است و می‌خواهد ترکم کند',s:3}, 
+                    {t:'پشت سر هم زنگ می‌زنم و گریه می‌کنم',s:3}, 
+                    {t:'من هم تلفن‌هایش را جواب نمی‌دهم تا تلافی کنم',s:2}, 
+                    {t:'ناراحتم، اما درک می‌کنم و برای خودم برنامه می‌چینم',s:0}
+                ]},
+                en: { name: 'Abandonment', desc: 'Fear of leaving.', scenario: 'Partner cancels dinner due to work emergency.', advice: 'Remind yourself: Distance is not desertion.', options: [
+                    {t:'Sure they want to leave me',s:3}, 
+                    {t:'Panic and call repeatedly',s:3}, 
+                    {t:'Ignore them back to punish',s:2}, 
+                    {t:'Sad, but I understand and make other plans',s:0}
+                ]},
+                fr: { name: 'Abandon', desc: 'Peur d\'être quitté.', scenario: 'Le partenaire annule le dîner pour le travail.', advice: 'La distance n\'est pas un rejet.', options: [
+                    {t:'Sûr qu\'il veut me quitter',s:3}, 
+                    {t:'Panique et appels répétés',s:3}, 
+                    {t:'Ignorer en retour',s:2}, 
+                    {t:'Triste, mais je comprends',s:0}
+                ]}
+            }},
+            { id: 'ma', domainId: 'd1', color: '#4cc9f0', icon: 'fa-shield-alt', texts: {
+                fa: { name: 'بی‌اعتمادی', desc: 'انتظار آسیب از دیگران.', scenario: 'رئیستان شما را به دفترش صدا می‌زند و لحنش خنثی است.', advice: 'ذهن شما همیشه سناریوی فاجعه می‌نویسد. مکث کنید و شواهد واقعی را بررسی کنید.', options: [
+                    {t:'حتماً می‌خواهد اخراجم کند، استرس شدید می‌گیرم',s:3}, 
+                    {t:'قبل از اینکه او حرف بزند، من حمله می‌کنم',s:2}, 
+                    {t:'استعفا می‌دهم تا قبل از اخراج شدن رفته باشم',s:2}, 
+                    {t:'کمی نگرانم، اما صبر می‌کنم ببینم چه می‌گوید',s:0}
+                ]},
+                en: { name: 'Mistrust', desc: 'Expect harm.', scenario: 'Boss calls you in with a neutral tone.', advice: 'Pause and check the facts before assuming the worst.', options: [
+                    {t:'Panic, assuming I\'m fired',s:3}, 
+                    {t:'Attack first before they can',s:2}, 
+                    {t:'Avoid the meeting',s:2}, 
+                    {t:'Wait to hear what it is',s:0}
+                ]},
+                fr: { name: 'Méfiance', desc: 'Attente de mal.', scenario: 'Le patron vous appelle d\'un ton neutre.', advice: 'Vérifiez les faits avant de paniquer.', options: [
+                    {t:'Panique, je suis viré',s:3}, 
+                    {t:'Attaquer en premier',s:2}, 
+                    {t:'Éviter la réunion',s:2}, 
+                    {t:'Attendre de voir',s:0}
+                ]}
+            }},
+            { id: 'si', domainId: 'd1', color: '#4cc9f0', icon: 'fa-users-slash', texts: {
+                fa: { name: 'انزوای اجتماعی', desc: 'حس تفاوت و بیگانگی.', scenario: 'به مهمانی دعوت شده‌اید که اکثر افراد را نمی‌شناسید.', advice: 'شما موجود فضایی نیستید. دنبال یک نقطه مشترک کوچک با یک نفر بگردید.', options: [
+                    {t:'نمی‌روم، من با آن جمع‌ها فرق دارم',s:3}, 
+                    {t:'می‌روم ولی در گوشه‌ای با موبایلم مشغول می‌شوم',s:2}, 
+                    {t:'نقش یک آدم خیلی باحال را بازی می‌کنم',s:2}, 
+                    {t:'می‌روم و سعی می‌کنم با یک نفر سر صحبت را باز کنم',s:0}
+                ]},
+                en: { name: 'Social Isolation', desc: 'Feeling alien.', scenario: 'Invited to a party with strangers.', advice: 'Find one small commonality with someone.', options: [
+                    {t:'Don\'t go, I don\'t fit in',s:3}, 
+                    {t:'Go but hide in corner',s:2}, 
+                    {t:'Put on a fake persona',s:2}, 
+                    {t:'Go and try to talk to one person',s:0}
+                ]},
+                fr: { name: 'Isolement Social', desc: 'Se sentir étranger.', scenario: 'Soirée avec des inconnus.', advice: 'Trouvez un point commun.', options: [
+                    {t:'Ne pas y aller',s:3}, 
+                    {t:'Rester dans son coin',s:2}, 
+                    {t:'Jouer un rôle',s:2}, 
+                    {t:'Essayer de parler à une personne',s:0}
+                ]}
+            }},
+            { id: 'ds', domainId: 'd1', color: '#4cc9f0', icon: 'fa-mask', texts: {
+                fa: { name: 'نقص و شرم', desc: 'حس بی‌ارزشی درونی.', scenario: 'در جمع دوستانه مرتکب اشتباه لپی خنده‌داری می‌شوید.', advice: 'اشتباه کردن انسانی است. خودتان را با نقص‌هایتان بپذیرید.', options: [
+                    {t:'آب می‌شوم و می‌خواهم زمین دهان باز کند',s:3}, 
+                    {t:'عصبانی می‌شوم اگر کسی بخندد',s:2}, 
+                    {t:'سریع بحث را عوض می‌کنم تا فراموش شود',s:2}, 
+                    {t:'خودم هم می‌خندم و اصلاحش می‌کنم',s:0}
+                ]},
+                en: { name: 'Defectiveness', desc: 'Feeling worthless.', scenario: 'Make a funny mistake in public.', advice: 'Mistakes are human. Accept yourself.', options: [
+                    {t:'Feel deeply ashamed',s:3}, 
+                    {t:'Get angry at laughers',s:2}, 
+                    {t:'Change subject rapidly',s:2}, 
+                    {t:'Laugh at myself too',s:0}
+                ]},
+                fr: { name: 'Imperfection', desc: 'Sentiment d\'indignité.', scenario: 'Erreur amusante en public.', advice: 'Les erreurs sont humaines.', options: [
+                    {t:'Honte profonde',s:3}, 
+                    {t:'Colère contre les rires',s:2}, 
+                    {t:'Changer de sujet',s:2}, 
+                    {t:'Rire de soi-même',s:0}
+                ]}
+            }},
+
+            // --- DOMAIN 2: IMPAIRED AUTONOMY ---
+            { id: 'di', domainId: 'd2', color: '#06d6a0', icon: 'fa-baby', texts: {
+                fa: { name: 'وابستگی', desc: 'ناتوانی در تصمیم‌گیری مستقل.', scenario: 'باید برای خرید ماشین جدید تصمیم بگیرید.', advice: 'به خودتان اعتماد کنید. حتی اگر اشتباه کنید، یاد می‌گیرید.', options: [
+                    {t:'بدون تایید پدر/همسرم محال است بخرم',s:3}, 
+                    {t:'آنقدر تعلل می‌کنم تا مدل‌ها گران شوند',s:2}, 
+                    {t:'دقیقاً همان چیزی را می‌خرم که دیگران دارند',s:2}, 
+                    {t:'تحقیق می‌کنم و طبق سلیقه خودم انتخاب می‌کنم',s:0}
+                ]},
+                en: { name: 'Dependence', desc: 'Inability to decide alone.', scenario: 'Buying a new car.', advice: 'Trust yourself. Mistakes are learning.', options: [
+                    {t:'Can\'t buy without approval',s:3}, 
+                    {t:'Procrastinate until too late',s:2}, 
+                    {t:'Copy what others buy',s:2}, 
+                    {t:'Research and decide myself',s:0}
+                ]},
+                fr: { name: 'Dépendance', desc: 'Incapacité à décider.', scenario: 'Achat d\'une voiture.', advice: 'Faites-vous confiance.', options: [
+                    {t:'Besoin d\'approbation',s:3}, 
+                    {t:'Procrastiner',s:2}, 
+                    {t:'Copier les autres',s:2}, 
+                    {t:'Décider soi-même',s:0}
+                ]}
+            }},
+            { id: 'vh', domainId: 'd2', color: '#06d6a0', icon: 'fa-bolt', texts: {
+                fa: { name: 'آسیب‌پذیری', desc: 'ترس اغراق‌آمیز از فاجعه.', scenario: 'شایعه‌ای درباره بحران اقتصادی می‌شنوید.', advice: 'تمرکز روی فاجعه فقط فلجتان می‌کند. روی کارهایی که "الان" از دستتان برمی‌آید تمرکز کنید.', options: [
+                    {t:'شب خوابم نمی‌برد و منتظر بدبختی‌ام',s:3}, 
+                    {t:'تمام پول‌هایم را نقد می‌کنم و پنهان می‌کنم',s:2}, 
+                    {t:'اخبار را کلاً قطع می‌کنم (انکار)',s:2}, 
+                    {t:'بررسی می‌کنم چقدر واقعیت دارد و برنامه می‌ریزم',s:0}
+                ]},
+                en: { name: 'Vulnerability', desc: 'Fear of catastrophe.', scenario: 'Rumors of economic crisis.', advice: 'Focus on what you can control now.', options: [
+                    {t:'Can\'t sleep, waiting for doom',s:3}, 
+                    {t:'Hoard cash in panic',s:2}, 
+                    {t:'Denial / Block news',s:2}, 
+                    {t:'Check facts and plan',s:0}
+                ]},
+                fr: { name: 'Vulnérabilité', desc: 'Peur de catastrophe.', scenario: 'Rumeurs de crise.', advice: 'Concentrez-vous sur le contrôle.', options: [
+                    {t:'Insomnie et peur',s:3}, 
+                    {t:'Panique financière',s:2}, 
+                    {t:'Déni total',s:2}, 
+                    {t:'Vérifier et planifier',s:0}
+                ]}
+            }},
+            { id: 'em', domainId: 'd2', color: '#06d6a0', icon: 'fa-link', texts: {
+                fa: { name: 'گرفتار', desc: 'مرزهای نامشخص با دیگران.', scenario: 'والدینتان با انتخاب شغل شما مخالفند.', advice: 'شما حق دارید زندگی خودتان را داشته باشید، حتی اگر آنها ناراحت شوند.', options: [
+                    {t:'شغل را رها می‌کنم چون نارضایتی آنها عذابم می‌دهد',s:3}, 
+                    {t:'پنهانی کارم را ادامه می‌دهم و دروغ می‌گویم',s:2}, 
+                    {t:'دعوای شدیدی راه می‌اندازم و قهر می‌کنم',s:2}, 
+                    {t:'توضیح می‌دهم که این انتخاب من است و احترام می‌خواهم',s:0}
+                ]},
+                en: { name: 'Enmeshment', desc: 'No boundaries.', scenario: 'Parents dislike your job.', advice: 'You have a right to your own life.', options: [
+                    {t:'Quit to please them',s:3}, 
+                    {t:'Lie and hide it',s:2}, 
+                    {t:'Fight aggressively',s:2}, 
+                    {t:'Assert my choice respectfully',s:0}
+                ]},
+                fr: { name: 'Fusion', desc: 'Pas de limites.', scenario: 'Parents n\'aiment pas votre job.', advice: 'Vous avez droit à votre vie.', options: [
+                    {t:'Démissionner pour eux',s:3}, 
+                    {t:'Mentir',s:2}, 
+                    {t:'Se battre',s:2}, 
+                    {t:'Affirmer son choix',s:0}
+                ]}
+            }},
+            { id: 'fa', domainId: 'd2', color: '#06d6a0', icon: 'fa-chart-down', texts: {
+                fa: { name: 'شکست', desc: 'حس بازنده بودن.', scenario: 'همکلاسی قدیمی‌تان مدیرعامل شده است.', advice: 'مقایسه باطن زندگی خود با ظاهر زندگی دیگران اشتباه است. مسیر خودتان را بسازید.', options: [
+                    {t:'من یک بازنده‌ام و هیچوقت به جایی نمی‌رسم',s:3}, 
+                    {t:'شروع می‌کنم به ایراد گرفتن از او (شانس آورده)',s:2}, 
+                    {t:'بی‌خیال تلاش می‌شوم، فایده ندارد',s:2}, 
+                    {t:'حس خوبی نیست، اما روی اهداف خودم تمرکز می‌کنم',s:0}
+                ]},
+                en: { name: 'Failure', desc: 'Feeling like a loser.', scenario: 'Classmate becomes CEO.', advice: 'Don\'t compare. Build your own path.', options: [
+                    {t:'I am a total loser',s:3}, 
+                    {t:'Devalue them (just luck)',s:2}, 
+                    {t:'Give up trying',s:2}, 
+                    {t:'Focus on my own goals',s:0}
+                ]},
+                fr: { name: 'Échec', desc: 'Se sentir perdant.', scenario: 'Un ami devient PDG.', advice: 'Ne comparez pas. Tracez votre route.', options: [
+                    {t:'Je suis un raté',s:3}, 
+                    {t:'C\'est juste de la chance',s:2}, 
+                    {t:'Abandonner',s:2}, 
+                    {t:'Se concentrer sur soi',s:0}
+                ]}
+            }},
+
+            // --- DOMAIN 3: IMPAIRED LIMITS ---
+            { id: 'et', domainId: 'd3', color: '#ef476f', icon: 'fa-crown', texts: {
+                fa: { name: 'استحقاق', desc: 'خود را خاص دیدن.', scenario: 'در بانک نوبتتان شده اما کارمند دارد تلفن صحبت می‌کند.', advice: 'خشم شما ناشی از این حس است که "قوانین برای من نیست". تمرین صبر کنید.', options: [
+                    {t:'فریاد می‌زنم: "می‌دونی من کی هستم؟"',s:3}, 
+                    {t:'با عصبانیت شدید با رئیس بانک دعوا می‌کنم',s:2}, 
+                    {t:'قهر می‌کنم و از بانک می‌روم بیرون',s:2}, 
+                    {t:'چند دقیقه صبر می‌کنم، بعد مؤدبانه تذکر می‌دهم',s:0}
+                ]},
+                en: { name: 'Entitlement', desc: 'Feeling special.', scenario: 'Bank teller is on phone during your turn.', advice: 'Practice patience. You are not above delays.', options: [
+                    {t:'Yell: "Do you know who I am?"',s:3}, 
+                    {t:'Fight with manager',s:2}, 
+                    {t:'Storm out angrily',s:2}, 
+                    {t:'Wait briefly, then ask politely',s:0}
+                ]},
+                fr: { name: 'Droits Personnels', desc: 'Se sentir spécial.', scenario: 'Guichetier au téléphone.', advice: 'Patience. Vous n\'êtes pas au-dessus des délais.', options: [
+                    {t:'Crier',s:3}, 
+                    {t:'Dispute avec le chef',s:2}, 
+                    {t:'Partir furieux',s:2}, 
+                    {t:'Attendre puis demander',s:0}
+                ]}
+            }},
+            { id: 'is', domainId: 'd3', color: '#ef476f', icon: 'fa-gamepad', texts: {
+                fa: { name: 'خویشتن‌داری ناکافی', desc: 'گریز از سختی و مسئولیت.', scenario: 'باید برای امتحان فردا درس بخوانید، اما سریال جذاب است.', advice: 'دردِ انضباط کمتر از دردِ پشیمانی است. پاداش را به بعد از کار موکول کنید.', options: [
+                    {t:'بی‌خیال درس، سریال می‌بینم',s:3}, 
+                    {t:'درس می‌خوانم اما هر ۵ دقیقه گوشی چک می‌کنم',s:2}, 
+                    {t:'می‌خوابم تا استرس نگیرم',s:2}, 
+                    {t:'گوشی را خاموش می‌کنم و ۲ ساعت می‌خوانم',s:0}
+                ]},
+                en: { name: 'Insuff. Self-Control', desc: 'Avoiding discipline.', scenario: 'Study for exam vs TV.', advice: 'Discipline hurts less than regret.', options: [
+                    {t:'Watch TV, ignore study',s:3}, 
+                    {t:'Study but distracted constantly',s:2}, 
+                    {t:'Sleep to avoid stress',s:2}, 
+                    {t:'Turn off phone and study',s:0}
+                ]},
+                fr: { name: 'Manque d\'autodiscipline', desc: 'Éviter la discipline.', scenario: 'Étudier ou TV.', advice: 'La discipline fait moins mal que le regret.', options: [
+                    {t:'Regarder la TV',s:3}, 
+                    {t:'Étudier distraitement',s:2}, 
+                    {t:'Dormir',s:2}, 
+                    {t:'Éteindre et étudier',s:0}
+                ]}
+            }},
+
+            // --- DOMAIN 4: OTHER-DIRECTEDNESS ---
+            { id: 'sb', domainId: 'd4', color: '#ffd166', icon: 'fa-hand-paper', texts: {
+                fa: { name: 'اطاعت', desc: 'تسلیم اجباری به دیگران.', scenario: 'دوستتان جایی را برای شام انتخاب می‌کند که شما متن فرید.', advice: 'نظر شما هم به اندازه او مهم است. تمرین کنید بگویید "من ترجیح می‌دهم جای دیگری برویم".', options: [
+                    {t:'می‌گویم: "عالیه"، ولی در دلم ناراحتم',s:3}, 
+                    {t:'می‌روم ولی تمام مدت قیافه می‌گیرم',s:2}, 
+                    {t:'بهانه می‌آورم که مریضم و نمی‌روم',s:2}, 
+                    {t:'پیشنهاد می‌دهم جای دیگری برویم',s:0}
+                ]},
+                en: { name: 'Subjugation', desc: 'Forced surrender.', scenario: 'Friend picks restaurant you hate.', advice: 'Your preference matters too.', options: [
+                    {t:'Say "Great" but feel resentful',s:3}, 
+                    {t:'Go but act moody',s:2}, 
+                    {t:'Lie that I\'m sick',s:2}, 
+                    {t:'Suggest another place',s:0}
+                ]},
+                fr: { name: 'Assujettissement', desc: 'Soumission.', scenario: 'Ami choisit un resto que vous détestez.', advice: 'Votre avis compte.', options: [
+                    {t:'Dire oui à contrecoeur',s:3}, 
+                    {t:'Y aller en boudant',s:2}, 
+                    {t:'Mentir pour ne pas y aller',s:2}, 
+                    {t:'Suggérer ailleurs',s:0}
+                ]}
+            }},
+            { id: 'ss', domainId: 'd4', color: '#ffd166', icon: 'fa-heart-broken', texts: {
+                fa: { name: 'ایثار', desc: 'اولویت دادن به نیاز دیگران.', scenario: 'پول کمی دارید اما دوستی قرض می‌خواهد.', advice: 'کمک کردن خوب است، اما نه به قیمت نابودی خودتان. "نه" گفتن را تمرین کنید.', options: [
+                    {t:'پول خودم را می‌دهم، حتی اگر بی‌پول شوم',s:3}, 
+                    {t:'می‌دهم ولی بعداً خودم را سرزنش می‌کنم',s:2}, 
+                    {t:'دروغ می‌گویم که ندارم',s:2}, 
+                    {t:'توضیح می‌دهم که الان شرایطش را ندارم',s:0}
+                ]},
+                en: { name: 'Self-Sacrifice', desc: 'Others first.', scenario: 'Broke but friend asks for loan.', advice: 'Don\'t set yourself on fire to keep others warm.', options: [
+                    {t:'Give money and suffer',s:3}, 
+                    {t:'Give but resent it',s:2}, 
+                    {t:'Lie that I have none',s:2}, 
+                    {t:'Explain I can\'t right now',s:0}
+                ]},
+                fr: { name: 'Abnégation', desc: 'Les autres d\'abord.', scenario: 'Fauché mais ami demande prêt.', advice: 'Ne vous détruisez pas pour aider.', options: [
+                    {t:'Donner et souffrir',s:3}, 
+                    {t:'Donner avec rancune',s:2}, 
+                    {t:'Mentir',s:2}, 
+                    {t:'Expliquer que je ne peux pas',s:0}
+                ]}
+            }},
+            { id: 'as', domainId: 'd4', color: '#ffd166', icon: 'fa-thumbs-up', texts: {
+                fa: { name: 'پذیرش‌جویی', desc: 'نیاز شدید به تایید.', scenario: 'پست اینستاگرامی گذاشته‌اید و لایک کمی خورده است.', advice: 'ارزش شما به تعداد لایک نیست. تایید درونی را جایگزین تایید بیرونی کنید.', options: [
+                    {t:'پست را پاک می‌کنم و احساس بی‌ارزشی می‌کنم',s:3}, 
+                    {t:'شروع می‌کنم به استوری گذاشتن برای جلب توجه',s:2}, 
+                    {t:'تصمیم می‌گیرم دیگر فعالیت نکنم',s:2}, 
+                    {t:'مهم نیست، خودم آن عکس را دوست داشتم',s:0}
+                ]},
+                en: { name: 'Approval Seeking', desc: 'Need validation.', scenario: 'Low likes on social media post.', advice: 'Validate yourself internally.', options: [
+                    {t:'Delete post, feel worthless',s:3}, 
+                    {t:'Post more for attention',s:2}, 
+                    {t:'Quit social media angrily',s:2}, 
+                    {t:'It\'s okay, I liked the photo',s:0}
+                ]},
+                fr: { name: 'Recherche d\'approbation', desc: 'Besoin de validation.', scenario: 'Peu de likes sur un post.', advice: 'Validez-vous intérieurement.', options: [
+                    {t:'Supprimer et se sentir nul',s:3}, 
+                    {t:'Poster plus pour l\'attention',s:2}, 
+                    {t:'Quitter les réseaux',s:2}, 
+                    {t:'Pas grave, j\'aimais la photo',s:0}
+                ]}
+            }},
+
+            // --- DOMAIN 5: OVERVIGILANCE & INHIBITION ---
+            { id: 'np', domainId: 'd5', color: '#118ab2', icon: 'fa-cloud-rain', texts: {
+                fa: { name: 'منفی‌گرایی', desc: 'تمرکز بر جنبه‌های منفی.', scenario: 'در یک مهمانی عالی هستید، اما غذا کمی سرد است.', advice: 'اجازه ندهید یک لکه کوچک، کل تصویر زیبا را خراب کند. لذت بردن را تمرین کنید.', options: [
+                    {t:'کل شب غر می‌زنم که غذا بد بود',s:3}, 
+                    {t:'نمی‌توانم لذت ببرم، حالم گرفته می‌شود',s:2}, 
+                    {t:'سعی می‌کنم فراموش کنم ولی سخت است',s:2}, 
+                    {t:'از بقیه چیزها (موزیک، دوستان) لذت می‌برم',s:0}
+                ]},
+                en: { name: 'Negativity', desc: 'Focus on negatives.', scenario: 'Great party but food is cold.', advice: 'Don\'t let one flaw ruin the picture.', options: [
+                    {t:'Complain all night',s:3}, 
+                    {t:'Mood ruined',s:2}, 
+                    {t:'Hard to forget',s:2}, 
+                    {t:'Enjoy music and friends',s:0}
+                ]},
+                fr: { name: 'Négativisme', desc: 'Focus négatif.', scenario: 'Super fête mais plat froid.', advice: 'Ne gâchez pas tout pour un détail.', options: [
+                    {t:'Se plaindre toute la soirée',s:3}, 
+                    {t:'Humeur gâchée',s:2}, 
+                    {t:'Dur à oublier',s:2}, 
+                    {t:'Profiter du reste',s:0}
+                ]}
+            }},
+            { id: 'ei', domainId: 'd5', color: '#118ab2', icon: 'fa-robot', texts: {
+                fa: { name: 'بازداری هیجانی', desc: 'خفه کردن احساسات.', scenario: 'از دست دوست صمیمی‌تان به شدت عصبانی هستید.', advice: 'احساسات مثل بخار دیگ زودپز هستند، اگر آزاد نشوند منفجر می‌شوند.', options: [
+                    {t:'کاملاً خونسرد رفتار می‌کنم انگار اتفاقی نیفتاده',s:3}, 
+                    {t:'سکوت می‌کنم تا سردرد بگیرم',s:2}, 
+                    {t:'با طعنه و کنایه حرف می‌زنم',s:2}, 
+                    {t:'می‌گویم: "من الان خیلی عصبانی‌ام"',s:0}
+                ]},
+                en: { name: 'Emotional Inhibition', desc: 'Stifling feelings.', scenario: 'Furious at best friend.', advice: 'Emotions need release.', options: [
+                    {t:'Act totally cool',s:3}, 
+                    {t:'Silence until headache',s:2}, 
+                    {t:'Use sarcasm',s:2}, 
+                    {t:'Say: "I am very angry"',s:0}
+                ]},
+                fr: { name: 'Inhibition', desc: 'Étouffer les émotions.', scenario: 'Furieux contre un ami.', advice: 'Les émotions doivent sortir.', options: [
+                    {t:'Rester froid',s:3}, 
+                    {t:'Silence douloureux',s:2}, 
+                    {t:'Sarcasme',s:2}, 
+                    {t:'Dire: "Je suis en colère"',s:0}
+                ]}
+            }},
+            { id: 'us', domainId: 'd5', color: '#118ab2', icon: 'fa-ruler', texts: {
+                fa: { name: 'معیارهای سرسختانه', desc: 'تلاش بی‌رحمانه برای کمال.', scenario: 'خانه را تمیز کرده‌اید اما یک لکه روی شیشه مانده.', advice: 'استاندارد "خوب" را جایگزین "عالی" کنید. به خودتان استراحت بدهید.', options: [
+                    {t:'همه چیز خراب شد، دوباره تمیز می‌کنم',s:3}, 
+                    {t:'اعصابم خرد می‌شود و نمی‌توانم بنشینم',s:2}, 
+                    {t:'خودم را سرزنش می‌کنم که بی‌دقتم',s:2}, 
+                    {t:'مهم نیست، خانه به اندازه کافی تمیز است',s:0}
+                ]},
+                en: { name: 'Unrelenting Standards', desc: 'Ruthless perfectionism.', scenario: 'Cleaned house, one spot missed.', advice: 'Good is enough.', options: [
+                    {t:'Ruined, clean again',s:3}, 
+                    {t:'Can\'t relax, annoyed',s:2}, 
+                    {t:'Blame myself',s:2}, 
+                    {t:'It\'s clean enough',s:0}
+                ]},
+                fr: { name: 'Idéaux Exigeants', desc: 'Perfectionnisme.', scenario: 'Maison propre, une tache reste.', advice: 'Le bien suffit.', options: [
+                    {t:'Tout refaire',s:3}, 
+                    {t:'Impossible de se détendre',s:2}, 
+                    {t:'S\'en vouloir',s:2}, 
+                    {t:'C\'est assez propre',s:0}
+                ]}
+            }},
+            { id: 'pu', domainId: 'd5', color: '#118ab2', icon: 'fa-gavel', texts: {
+                fa: { name: 'تنبیه', desc: 'عدم بخشش اشتباهات.', scenario: 'به خاطر ترافیک دیر به جلسه رسیدید.', advice: 'همه اشتباه می‌کنند. شفقت با خود را تمرین کنید نه شلاق زدن به خود.', options: [
+                    {t:'خودم را احمق خطاب می‌کنم و تمام روز حالم بد است',s:3}, 
+                    {t:'فکر می‌کنم لایق جریمه شدن هستم',s:3}, 
+                    {t:'تقصیر را گردن راننده‌ها می‌اندازم و فحش می‌دهم',s:2}, 
+                    {t:'عذرخواهی می‌کنم و سعی می‌کنم جبران کنم',s:0}
+                ]},
+                en: { name: 'Punitiveness', desc: 'No forgiveness.', scenario: 'Late to meeting due to traffic.', advice: 'Practice self-compassion.', options: [
+                    {t:'Call myself idiot all day',s:3}, 
+                    {t:'Feel I deserve punishment',s:3}, 
+                    {t:'Blame/curse drivers',s:2}, 
+                    {t:'Apologize and move on',s:0}
+                ]},
+                fr: { name: 'Punition', desc: 'Pas de pardon.', scenario: 'En retard à cause du trafic.', advice: 'Soyez compatissant.', options: [
+                    {t:'Se traiter d\'idiot',s:3}, 
+                    {t:'Mériter une punition',s:3}, 
+                    {t:'Maudire les autres',s:2}, 
+                    {t:'S\'excuser et avancer',s:0}
+                ]}
+            }}
+        ];
+
+        // ... existing app logic ...
+        // ... existing visualEffects ...
+        // ... existing game logic ...
+        // ... existing window.onload ...
+        
+        // RE-ATTACH LOGIC (Copying pertinent parts to ensure it runs with new data)
+        // (Due to length limits, assuming logic blocks from previous artifact are preserved or re-inserted here if complete file needed. 
+        //  The logic block below is the standard one used previously.)
+
+        const app = {
+            setLanguage: (lang) => {
+                curLang = lang;
+                const t = i18n[lang];
+                document.documentElement.lang = lang;
+                document.documentElement.dir = t.dir;
+                
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById('btn-'+lang).classList.add('active');
+
+                app.scrambleText('landing-title', t.title);
+
+                document.getElementById('landing-subtitle').innerText = t.subtitle;
+                document.getElementById('mode-title').innerText = t.modeTitle;
+                
+                document.getElementById('mode-0-title').innerText = t.modes[0]; document.getElementById('mode-0-desc').innerText = t.modeDescs[0];
+                document.getElementById('mode-1-title').innerText = t.modes[1]; document.getElementById('mode-1-desc').innerText = t.modeDescs[1];
+                document.getElementById('mode-2-title').innerText = t.modes[2]; document.getElementById('mode-2-desc').innerText = t.modeDescs[2];
+                document.getElementById('mode-3-title').innerText = t.modes[3]; document.getElementById('mode-3-desc').innerText = t.modeDescs[3];
+                
+                document.getElementById('res-title').innerText = t.resTitle;
+                document.getElementById('res-subtitle').innerText = t.resSub;
+                document.getElementById('res-top-shadows').innerText = t.topShadows;
+                document.getElementById('res-advice-label').innerText = t.advice + ':';
+                document.getElementById('btn-restart').innerText = t.restart;
+
+                if(!document.getElementById('page-game').classList.contains('hidden')) {
+                    game.loadLevel();
+                }
+            },
+            scrambleText: (elementId, finalSubtext) => {
+                const el = document.getElementById(elementId);
+                const chars = '!<>-_\\/[]{}—=+*^?#________';
+                let iteration = 0;
+                clearInterval(el.interval);
+                el.interval = setInterval(() => {
+                    el.innerText = finalSubtext.split('').map((letter, index) => {
+                        if (index < iteration) return finalSubtext[index];
+                        return chars[Math.floor(Math.random() * chars.length)];
+                    }).join('');
+                    if (iteration >= finalSubtext.length) clearInterval(el.interval);
+                    iteration += 1 / 2;
+                }, 40);
+            },
+            enterPortal: () => {
+                document.querySelector('.gateway-portal').style.transform = 'scale(50)';
+                document.querySelector('.gateway-portal').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('intro-state').classList.add('hidden');
+                    document.getElementById('mode-selection-panel').classList.remove('hidden');
+                    setTimeout(() => document.getElementById('mode-selection-panel').classList.add('active'), 50);
+                }, 800);
+            }
+        };
+
+        const visualEffects = {
+            init: () => {
+                const cursor = document.getElementById('custom-cursor');
+                const aura = document.getElementById('aura-overlay');
+                const eye = document.getElementById('tracking-eye');
+                const canvas = document.getElementById('particles-canvas');
+                
+                document.addEventListener('mousemove', (e) => {
+                    cursor.style.left = e.clientX + 'px';
+                    cursor.style.top = e.clientY + 'px';
+                    if(e.target.closest('button') || e.target.closest('.gateway-portal') || e.target.closest('.mode-card')) cursor.classList.add('hovered');
+                    else cursor.classList.remove('hovered');
+
+                    if(aura) {
+                        aura.style.setProperty('--x', e.clientX + 'px');
+                        aura.style.setProperty('--y', e.clientY + 'px');
+                    }
+                    if(eye) {
+                        const x = (e.clientX - window.innerWidth / 2) / 20;
+                        const y = (e.clientY - window.innerHeight / 2) / 20;
+                        eye.style.transform = `translate(${x}px, ${y}px)`;
+                    }
+                });
+
+                if(canvas) {
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                    const particles = Array.from({length: 80}, () => ({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        speed: Math.random() * 2 + 0.5,
+                        angle: Math.random() * Math.PI * 2,
+                        size: Math.random() * 2
+                    }));
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+
+                    function draw() {
+                        ctx.clearRect(0,0,canvas.width,canvas.height);
+                        ctx.fillStyle = 'rgba(155, 93, 229, 0.6)';
+                        particles.forEach(p => {
+                            const dx = centerX - p.x;
+                            const dy = centerY - p.y;
+                            const dist = Math.sqrt(dx*dx + dy*dy);
+                            p.x += (dx / dist) * p.speed;
+                            p.y += (dy / dist) * p.speed;
+                            p.x += Math.cos(p.angle) * 2; 
+                            p.y += Math.sin(p.angle) * 2;
+                            p.angle += 0.05;
+                            if(dist < 10) {
+                                p.x = Math.random() * canvas.width;
+                                p.y = Math.random() * canvas.height;
+                                if(Math.random() > 0.5) p.x = Math.random() > 0.5 ? 0 : canvas.width;
+                                else p.y = Math.random() > 0.5 ? 0 : canvas.height;
+                            }
+                            ctx.beginPath();
+                            ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+                            ctx.fill();
+                        });
+                        requestAnimationFrame(draw);
+                    }
+                    draw();
+                }
+            }
+        };
+
+        const game = {
+            activeSchemas: [], currentLevel: 0, scores: {}, totalSteps: 0,
+            start: (steps) => {
+                game.totalSteps = steps; game.currentLevel = 0; game.scores = {};
+                let deck = [...schemaData];
+                if (steps < 18) deck.sort(() => Math.random() - 0.5);
+                game.activeSchemas = deck.slice(0, steps);
+                game.activeSchemas.forEach(s => game.scores[s.id] = 0);
+                document.getElementById('page-landing').classList.add('hidden');
+                game.loadLevel();
+                document.getElementById('page-game').classList.remove('hidden');
+            },
+            loadLevel: () => {
+                const data = game.activeSchemas[game.currentLevel];
+                const t = data.texts[curLang] || data.texts['en']; 
+                document.documentElement.style.setProperty('--accent-color', data.color);
+                document.getElementById('level-tracker').innerText = `${i18n[curLang].level} ${game.currentLevel + 1} / ${game.totalSteps}`;
+                document.getElementById('domain-badge').innerText = i18n[curLang].domain + ': ' + i18n[curLang].domains[data.domainId];
+                document.getElementById('monster-title').innerText = t.name;
+                document.getElementById('monster-desc').innerText = t.desc;
+                document.getElementById('monster-icon').className = `fas ${data.icon} monster-avatar`;
+                document.getElementById('scenario-text').innerText = t.scenario;
+                const box = document.getElementById('choices-box'); box.innerHTML = '';
+                
+                const shuffledOpts = [...t.options].sort(() => Math.random() - 0.5);
+                shuffledOpts.forEach(opt => {
+                    const btn = document.createElement('button'); btn.className = 'choice-btn';
+                    btn.innerHTML = `<span>${opt.t}</span>`;
+                    btn.onclick = () => {
+                        game.scores[data.id] += opt.s;
+                        game.currentLevel++;
+                        if(game.currentLevel >= game.totalSteps) game.showResults(); else game.loadLevel();
+                    };
+                    box.appendChild(btn);
+                });
+            },
+            showResults: () => {
+                document.getElementById('page-game').classList.add('hidden');
+                document.getElementById('page-result').classList.remove('hidden');
+                
+                const results = game.activeSchemas.map(s => ({...s, val: game.scores[s.id]})).sort((a,b) => b.val - a.val);
+                const list = document.getElementById('top-schemas-list'); list.innerHTML = '';
+                
+                results.slice(0, 3).forEach(item => {
+                    if(item.val > 0) {
+                        const tItem = item.texts[curLang] || item.texts['en'];
+                        list.innerHTML += `<div class="d-flex justify-content-between border-bottom border-secondary py-2"><span>${tItem.name}</span><span class="fw-bold">${item.val > 2 ? i18n[curLang].severity.high : i18n[curLang].severity.med}</span></div>`;
+                    }
+                });
+
+                const top = results[0];
+                const tTop = top.texts[curLang] || top.texts['en'];
+                
+                if(top.val === 0) {
+                    document.getElementById('archetype-title').innerText = curLang === 'fa' ? "حکیم وارسته" : (curLang === 'fr' ? "Sage Avisé" : "Wise Sage");
+                    document.getElementById('final-advice').innerText = curLang === 'fa' ? "وضعیت عالی است. به مسیر خود ادامه دهید." : (curLang === 'fr' ? "Tout va bien. Continuez." : "Perfect balance. Keep going.");
+                } else {
+                    document.getElementById('archetype-title').innerText = tTop.name;
+                    document.getElementById('final-advice').innerText = tTop.advice;
+                }
+
+                const domainScores = { d1: 0, d2: 0, d3: 0, d4: 0, d5: 0 };
+                const domainCounts = { d1: 0, d2: 0, d3: 0, d4: 0, d5: 0 };
+                game.activeSchemas.forEach(s => {
+                    domainScores[s.domainId] += game.scores[s.id];
+                    domainCounts[s.domainId] += 3;
+                });
+                const dataPoints = [
+                    (domainScores.d1 / (domainCounts.d1 || 1)) * 100,
+                    (domainScores.d2 / (domainCounts.d2 || 1)) * 100,
+                    (domainScores.d3 / (domainCounts.d3 || 1)) * 100,
+                    (domainScores.d4 / (domainCounts.d4 || 1)) * 100,
+                    (domainScores.d5 / (domainCounts.d5 || 1)) * 100
+                ];
+                game.drawRadar(dataPoints);
+            },
+            drawRadar: (data) => {
+                const svg = document.getElementById('radar-svg');
+                const center = 50; const radius = 40;
+                const angles = [0, 72, 144, 216, 288].map(a => (a - 90) * Math.PI / 180);
+                let webHtml = '';
+                [0.25, 0.5, 0.75, 1].forEach(scale => {
+                    const points = angles.map(a => `${center + radius * scale * Math.cos(a)},${center + radius * scale * Math.sin(a)}`).join(' ');
+                    webHtml += `<polygon points="${points}" fill="none" stroke="#666" stroke-width="0.5" />`;
+                });
+                const polyPoints = angles.map((a, i) => `${center + radius * (data[i]/100) * Math.cos(a)},${center + radius * (data[i]/100) * Math.sin(a)}`).join(' ');
+                webHtml += `<polygon points="${polyPoints}" fill="rgba(155, 93, 229, 0.5)" stroke="var(--accent-color)" stroke-width="2" />`;
+                svg.innerHTML = webHtml;
+            }
+        };
+
+        window.onload = () => { visualEffects.init(); app.setLanguage('fa'); };
+    </script>
+</body>
+</html>
